@@ -1,21 +1,23 @@
-name: CI Build
 on:
   push:
     branches: [ main ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Notify Jenkins (with crumb)
         env:
-          JENKINS_URL:http://35.89.203.199:8080
+          JENKINS_URL: http://35.89.203.199:8080
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
         run: |
           CRUMB_JSON=$(curl -s -u "$JENKINS_USER:$JENKINS_API_TOKEN" "$JENKINS_URL/crumbIssuer/api/json")
           CRUMB_FIELD=$(echo "$CRUMB_JSON" | jq -r '.crumbRequestField')
           CRUMB=$(echo "$CRUMB_JSON" | jq -r '.crumb')
+          
           curl -X POST "$JENKINS_URL/job/myRepo/build?token=superSharedsecret" \
             --user "$JENKINS_USER:$JENKINS_API_TOKEN" \
             -H "$CRUMB_FIELD: $CRUMB"
